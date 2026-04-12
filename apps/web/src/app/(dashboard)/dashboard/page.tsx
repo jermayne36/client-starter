@@ -86,7 +86,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
+              <p className="rounded-md border border-dashed border-muted-foreground/30 px-3 py-2 text-sm italic text-muted-foreground">
                 Chart component — wire up Recharts when ready.
               </p>
               {/* Loading skeleton to demonstrate the pattern */}

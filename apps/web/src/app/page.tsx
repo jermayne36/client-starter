@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { ArrowRight, Zap, Shield, BarChart3, Layers } from "lucide-react"
+import { ArrowRight, Zap, Shield, BarChart3, Layers, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
@@ -98,6 +98,79 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section id="pricing" className="border-t border-border">
+          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+            <div className="mb-12 text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Simple pricing</h2>
+              <p className="mt-4 text-muted-foreground">
+                Start free. Upgrade when you&apos;re ready.
+              </p>
+            </div>
+
+            <div className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2">
+              {/* Free tier */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Free</CardTitle>
+                  <CardDescription>For individuals and side projects.</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">$0</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {["Up to 5 projects", "1 GB storage", "Community support"].map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <CheckCircle2 className="size-4 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button variant="outline" className="w-full" render={<Link href="/signup" />}>
+                    Get started
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Pro tier */}
+              <Card className="border-primary/40 bg-primary/5">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Pro</CardTitle>
+                    <Badge>Popular</Badge>
+                  </div>
+                  <CardDescription>For teams building serious products.</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">$29</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-2 text-sm">
+                    {[
+                      "Unlimited projects",
+                      "100 GB storage",
+                      "Priority support",
+                      "Advanced analytics",
+                      "Custom integrations",
+                    ].map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full" render={<Link href="/signup" />}>
+                    Start free trial
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </section>
 

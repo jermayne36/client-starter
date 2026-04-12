@@ -9,6 +9,7 @@ import {
   Users,
   BarChart3,
   FileText,
+  CreditCard,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
@@ -21,6 +22,7 @@ const sidebarLinks = [
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/users", label: "Users", icon: Users },
   { href: "/dashboard/documents", label: "Documents", icon: FileText },
+  { href: "/billing", label: "Billing", icon: CreditCard },
 ]
 
 const bottomLinks = [
