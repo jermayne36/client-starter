@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.turbo/
+out/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+
+# Misc
+*.log
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+
+# Credential dotfiles
+.stripe-credentials
+.supabase-credentials
+.sendgrid-credentials
+.sentry-credentials
+.*-credentials
+
+# Prevent non-pnpm lockfiles
+package-lock.json
+yarn.lock
+bun.lockb
