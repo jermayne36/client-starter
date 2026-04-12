@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
 
   // Transpile monorepo packages
   transpilePackages: ["@client/shared"],
+
+  // Prevent Next.js from bundling Prisma — it must be resolved at runtime
+  // in the monorepo from packages/database/node_modules
+  serverExternalPackages: ["@prisma/client", "prisma"],
 };
 
 export default nextConfig;
