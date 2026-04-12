@@ -19,9 +19,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { CreditCard, Zap, CheckCircle2, AlertTriangle } from "lucide-react"
+import { env } from "@/lib/env"
 
 // The price ID for the Pro plan — replace with your actual Stripe Price ID
-const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ?? "price_pro"
+const PRO_PRICE_ID = env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
 
 type SubscriptionStatus =
   | "ACTIVE"
