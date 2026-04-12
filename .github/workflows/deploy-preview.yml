@@ -36,8 +36,12 @@ jobs:
 
       - name: Build project artifacts
         # DATABASE_URL required: Prisma 6 initialises during Next.js page-data collection
+        # SENTRY_AUTH_TOKEN: enables source map upload to Sentry during CI builds.
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/placeholder"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }} --cwd=apps/web
 
       - name: Deploy to Vercel (Preview)

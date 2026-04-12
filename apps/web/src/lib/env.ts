@@ -30,4 +30,8 @@ export const serverEnv = {
   get STRIPE_SECRET_KEY() { return requireEnv("STRIPE_SECRET_KEY"); },
   get STRIPE_WEBHOOK_SECRET() { return requireEnv("STRIPE_WEBHOOK_SECRET"); },
   SENTRY_DSN: optionalEnv("SENTRY_DSN"),
+  // Build-time only — used by withSentryConfig for source map upload in CI
+  SENTRY_AUTH_TOKEN: optionalEnv("SENTRY_AUTH_TOKEN"),
+  SENTRY_ORG: optionalEnv("SENTRY_ORG"),
+  SENTRY_PROJECT: optionalEnv("SENTRY_PROJECT"),
 } as const;
