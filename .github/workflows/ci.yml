@@ -30,4 +30,9 @@ jobs:
         run: pnpm type-check
 
       - name: Build
+        # DATABASE_URL required: Prisma 6 initialises at Next.js build time during
+        # page-data collection even with serverExternalPackages set. A placeholder
+        # URL is sufficient — no real database connection is made during next build.
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/placeholder"
         run: pnpm build

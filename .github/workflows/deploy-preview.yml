@@ -1,0 +1,62 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview to Vercel
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }} --cwd=apps/web
+
+      - name: Build project artifacts
+        # DATABASE_URL required: Prisma 6 initialises during Next.js page-data collection
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/placeholder"
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }} --cwd=apps/web
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --cwd=apps/web)
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      - name: Post preview URL as PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Preview Deployment
+
+            | | |
+            |---|---|
+            | **Status** | ✅ Ready |
+            | **Preview URL** | ${{ steps.deploy.outputs.url }} |
+            | **Commit** | `${{ github.sha }}` |
+
+            > Auto-deployed from PR #${{ github.event.pull_request.number }} via Vercel
