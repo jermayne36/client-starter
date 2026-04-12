@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Routes that require authentication
-const PROTECTED_PREFIXES = ["/dashboard", "/app"];
+const PROTECTED_PREFIXES = ["/dashboard", "/app", "/billing"];
 
 function isProtected(pathname: string): boolean {
   return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
@@ -33,10 +33,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths EXCEPT:
-     * - _next/static  (static files)
-     * - _next/image   (image optimization)
+     * - _next/static      (static files)
+     * - _next/image       (image optimization)
      * - favicon.ico, sitemap.xml, robots.txt
+     * - api/webhooks      (Stripe webhooks — updateSession() is wasteful here
+     *                      and adds latency to the webhook response path)
      */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/webhooks).*)",
   ],
 };

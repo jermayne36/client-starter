@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@client/database/client";
 
 // OAuth callback handler — exchanges the `code` query param for a session.
 // Supabase redirects here after Google OAuth or email confirmation flows.
@@ -27,15 +28,37 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Trigger Prisma user sync after successful authentication
+  // Sync Prisma user record directly — the session is now active on the supabase
+  // client so getUser() returns the freshly-authenticated user. A self-HTTP fetch
+  // would forward stale pre-exchange cookies and get a 401.
   try {
-    await fetch(`${origin}/api/auth/sync`, {
-      method: "POST",
-      headers: {
-        // Forward the session cookies so the sync route can authenticate the user
-        Cookie: request.headers.get("cookie") ?? "",
-      },
-    });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user?.email) {
+      const name: string | null =
+        (user.user_metadata?.name as string | undefined) ??
+        (user.user_metadata?.full_name as string | undefined) ??
+        null;
+      const avatarUrl: string | null =
+        (user.user_metadata?.avatar_url as string | undefined) ??
+        (user.user_metadata?.picture as string | undefined) ??
+        null;
+      const emailVerified =
+        user.email_confirmed_at != null || user.confirmed_at != null;
+
+      await prisma.user.upsert({
+        where: { supabaseId: user.id },
+        update: { email: user.email, name, avatarUrl, emailVerified },
+        create: {
+          supabaseId: user.id,
+          email: user.email,
+          name,
+          avatarUrl,
+          emailVerified,
+        },
+      });
+    }
   } catch (syncError) {
     // Sync failure is non-fatal — the user is authenticated, sync retries on next request
     console.error("[auth/callback] user sync failed:", syncError);
