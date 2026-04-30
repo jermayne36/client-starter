@@ -19,11 +19,11 @@ const INTAKE_FORM_URL = "https://tally.so/r/PLACEHOLDER"
 export const metadata: Metadata = {
   title: "Automation Cleanup Audit",
   description:
-    "Broken automations slow your business down and erode team trust. Our Automation Cleanup Audit scores every workflow in your stack, identifies the brittle steps, and hands you a prioritised repair plan — or we fix it for you.",
+    "Broken automations slow your business down and erode team trust. Our Automation Cleanup Audit scores every workflow in your stack, identifies the brittle steps, and hands you a prioritized repair plan — or we fix it for you.",
   openGraph: {
     title: "Automation Cleanup Audit | ClientStarter",
     description:
-      "Score your automations, surface the brittle steps, get a prioritised repair plan. Quick Audit from $500.",
+      "Score your automations, surface the brittle steps, get a prioritized repair plan. Quick Audit from $750.",
     images: [{ url: "/marketing/automation-cleanup-hero.svg", width: 1200, height: 630 }],
   },
 }
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 const tiers = [
   {
     name: "Quick Audit",
-    price: "$500–$1,500",
+    price: "$750–$1,500",
     highlight: false,
     description: "Understand what's broken and why.",
     bullets: [
@@ -39,7 +39,7 @@ const tiers = [
       "Scored diagnostic across all major workflows",
       "Brittle-step identification with severity ratings",
       "Written repair-plan document (3–5 quick fixes)",
-      "30-min debrief call (PDT/PST)",
+      "30-min debrief call (PST)",
       "Delivered within 5 business days",
     ],
   },
@@ -86,7 +86,7 @@ const steps = [
     icon: FileSearch,
     title: "Receive scored repair plan",
     description:
-      "We score every workflow across 8 dimensions — error handling, credential hygiene, owner accountability, human-approval gates, and more. You get a written plan with severity ratings and prioritised fixes.",
+      "We score every workflow across 8 dimensions — error handling, credential hygiene, owner accountability, human-approval gates, and more. You get a written plan with severity ratings and prioritized fixes.",
   },
   {
     number: "03",
@@ -100,7 +100,7 @@ const steps = [
 const faqs = [
   {
     q: "How long does delivery take per tier?",
-    a: "Quick Audit: 5 business days PDT from completed intake. Standard Cleanup: 2–3 weeks depending on scope. Premium Rebuild: 4–8 weeks — scoped precisely after the Quick Audit findings.",
+    a: "Quick Audit: 3–5 business days from completed intake. Standard Cleanup: 5–7 business days. Premium Rebuild: 10–15 business days (the audit) — rebuild scope and timeline are agreed during the audit readout.",
   },
   {
     q: "What counts as an 'automation' for the audit?",
@@ -112,11 +112,11 @@ const faqs = [
   },
   {
     q: "Do you offer refunds?",
-    a: "Refund policy placeholder — owner to confirm before launch. Our current posture: if the delivered repair plan does not address the workflows listed in your intake form, we revise at no charge until it does.",
+    a: "Refunds are evaluated per engagement and discussed before kickoff — see your engagement agreement.",
   },
   {
     q: "We use a niche tool you may not know. Is that a problem?",
-    a: "Probably not. Our rubric is tool-agnostic — we score the design of the workflow (trigger logic, error paths, credential ownership, fallback behaviour) regardless of the platform. We flag platform-specific risk as a separate line item.",
+    a: "Probably not. Our rubric is tool-agnostic — we score the design of the workflow (trigger logic, error paths, credential ownership, fallback behavior) regardless of the platform. We flag platform-specific risk as a separate line item.",
   },
   {
     q: "Can we start with a Quick Audit and then move to Standard Cleanup?",
@@ -142,11 +142,11 @@ export default function AutomationCleanupPage() {
               <p className="mt-6 text-lg text-muted-foreground sm:text-xl">
                 Silent failures. Missed triggers. Credentials no one owns. Our Automation Cleanup
                 Audit scores every workflow in your stack, surfaces the brittle steps, and hands you
-                a prioritised repair plan — in 5 business days PDT.
+                a prioritized repair plan — in 3–5 business days PST.
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Button size="lg" render={<Link href={INTAKE_FORM_URL} target="_blank" rel="noopener noreferrer" />}>
-                  Book a Quick Audit ($500–$1,500)
+                  Book a Quick Audit ($750–$1,500)
                   <ArrowRight className="ml-2 size-4" />
                 </Button>
                 <Button size="lg" variant="outline" render={<Link href="#how-it-works" />}>
@@ -343,18 +343,18 @@ export default function AutomationCleanupPage() {
               Ready to stop guessing which automation will break next?
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Book a Quick Audit. Know your risk profile in 5 business days PDT.
+              Book a Quick Audit. Know your risk profile in 3–5 business days PST.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Button
                 size="lg"
                 render={<Link href={INTAKE_FORM_URL} target="_blank" rel="noopener noreferrer" />}
               >
-                Book a Quick Audit ($500–$1,500)
+                Book a Quick Audit ($750–$1,500)
                 <ArrowRight className="ml-2 size-4" />
               </Button>
-              <Button size="lg" variant="outline" render={<Link href="/services" />}>
-                View all ClientStarter services
+              <Button size="lg" variant="outline" render={<Link href="/about" />}>
+                About ClientStarter
               </Button>
             </div>
           </div>

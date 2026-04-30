@@ -6,6 +6,7 @@ const footerLinks = {
     { href: "#features", label: "Features" },
     { href: "#pricing", label: "Pricing" },
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/automation-cleanup", label: "Automation Cleanup" },
   ],
   Company: [
     { href: "/about", label: "About" },
