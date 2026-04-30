@@ -30,4 +30,13 @@ jobs:
         run: pnpm type-check
 
       - name: Build
+        # DATABASE_URL required: Prisma 6 initialises at Next.js build time during
+        # page-data collection even with serverExternalPackages set. A placeholder
+        # URL is sufficient — no real database connection is made during next build.
+        # SENTRY_AUTH_TOKEN: enables source map upload to Sentry during CI builds.
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/placeholder"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: pnpm build
