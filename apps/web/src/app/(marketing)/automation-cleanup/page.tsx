@@ -40,7 +40,7 @@ const tiers = [
       "Brittle-step identification with severity ratings",
       "Written repair-plan document (3–5 quick fixes)",
       "30-min debrief call (PST)",
-      "Delivered within 5 business days",
+      "Delivered within 3–5 business days",
     ],
   },
   {
