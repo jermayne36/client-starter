@@ -6,16 +6,17 @@ const footerLinks = {
     { href: "#features", label: "Features" },
     { href: "#pricing", label: "Pricing" },
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/automation-cleanup", label: "Automation Cleanup" },
   ],
   Company: [
-    { href: "#", label: "About" },
-    { href: "#", label: "Blog" },
-    { href: "#", label: "Careers" },
+    { href: "/about", label: "About" },
+    { href: "/blog", label: "Blog" },
+    { href: "/careers", label: "Careers" },
   ],
   Legal: [
-    { href: "#", label: "Privacy" },
-    { href: "#", label: "Terms" },
-    { href: "#", label: "Cookies" },
+    { href: "/privacy", label: "Privacy" },
+    { href: "/terms", label: "Terms" },
+    { href: "/cookies", label: "Cookies" },
   ],
 }
 

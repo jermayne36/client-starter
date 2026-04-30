@@ -112,11 +112,15 @@ async function main() {
     },
   ];
 
-  for (const entry of auditEntries) {
-    await prisma.auditLog.create({ data: entry });
+  const existingAuditCount = await prisma.auditLog.count();
+  if (existingAuditCount === 0) {
+    for (const entry of auditEntries) {
+      await prisma.auditLog.create({ data: entry });
+    }
+    console.log(`  ✓ Audit logs: ${auditEntries.length} entries`);
+  } else {
+    console.log(`  ↩ Audit logs: skipped (${existingAuditCount} already exist)`);
   }
-
-  console.log(`  ✓ Audit logs: ${auditEntries.length} entries`);
   console.log("✅ Seed complete.");
 }
 
