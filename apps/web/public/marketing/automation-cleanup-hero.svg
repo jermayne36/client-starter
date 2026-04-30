@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Illustration of tangled automation workflows being reorganized into clean, flowing pipelines">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  <!-- Background grid -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="1"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.6"/>
+  <!-- Glowing orb center -->
+  <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#6366f1" stop-opacity="0.3"/>
+    <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+  </radialGradient>
+  <ellipse cx="600" cy="315" rx="400" ry="280" fill="url(#glow)"/>
+  <!-- Broken automation paths (left) -->
+  <g opacity="0.7">
+    <path d="M 120 180 Q 200 120 280 200 Q 360 280 300 340 Q 240 400 320 460" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-dasharray="8 4"/>
+    <path d="M 160 220 Q 220 160 200 300 Q 180 400 260 380" stroke="#f97316" stroke-width="2" fill="none" stroke-dasharray="6 3"/>
+    <circle cx="120" cy="180" r="8" fill="#ef4444" opacity="0.8"/>
+    <circle cx="320" cy="460" r="8" fill="#ef4444" opacity="0.4"/>
+    <circle cx="300" cy="340" r="6" fill="#f97316" opacity="0.6"/>
+  </g>
+  <!-- Clean automation paths (right) -->
+  <g opacity="0.8">
+    <path d="M 880 160 L 960 160 L 960 240 L 1040 240 L 1040 320 L 1080 320" stroke="#6366f1" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 880 320 L 960 320 L 960 400 L 1040 400 L 1040 320" stroke="#818cf8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 880 460 L 1080 460" stroke="#6366f1" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="880" cy="160" r="10" fill="#6366f1"/>
+    <circle cx="1080" cy="320" r="10" fill="#6366f1"/>
+    <circle cx="1080" cy="460" r="8" fill="#818cf8"/>
+    <rect x="950" y="152" width="20" height="16" rx="4" fill="#6366f1" opacity="0.3"/>
+    <rect x="950" y="312" width="20" height="16" rx="4" fill="#818cf8" opacity="0.3"/>
+  </g>
+  <!-- Center: wrench/repair icon (custom SVG, no OS emoji) -->
+  <g transform="translate(540, 250)">
+    <!-- Gear shape -->
+    <path d="M 60 20 L 66 14 L 74 22 L 80 16 L 86 22 L 80 28 C 83 33 84 38 84 44 L 92 46 L 92 56 L 84 58 C 83 63 80 68 77 72 L 80 79 L 73 86 L 66 83 C 62 85 58 86 54 86 L 52 94 L 42 94 L 40 86 C 36 85 32 83 28 80 L 21 83 L 14 76 L 17 69 C 15 65 13 60 13 55 L 5 53 L 5 43 L 13 41 C 14 37 16 33 18 29 L 15 22 L 22 15 L 29 18 C 33 16 38 14 43 14 L 45 6 L 55 6 Z" fill="none" stroke="#6366f1" stroke-width="3" opacity="0.8"/>
+    <circle cx="48" cy="50" r="14" fill="none" stroke="#6366f1" stroke-width="3" opacity="0.8"/>
+    <!-- Checkmark overlay -->
+    <path d="M 40 52 L 46 58 L 58 44" stroke="#22c55e" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Placeholder label -->
+  <text x="600" y="490" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#475569" letter-spacing="2">
+    HERO IMAGE — REPLACE WITH GPT-IMAGE-2 PRODUCTION ASSET
+  </text>
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#e2e8f0">
+    Reclaim your broken automations.
+  </text>
+  <text x="600" y="395" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">
+    Automation Cleanup Audit — ClientStarter
+  </text>
+</svg>
