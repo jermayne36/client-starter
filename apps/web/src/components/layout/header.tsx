@@ -9,11 +9,10 @@ import { MobileNav } from "@/components/layout/mobile-nav"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/automation-cleanup", label: "Automation Cleanup" },
-  { href: "#features", label: "Features" },
+  { href: "#proof", label: "Proof" },
+  { href: "#deliverables", label: "Deliverables" },
   { href: "#pricing", label: "Pricing" },
+  { href: "/refund", label: "Refunds" },
 ]
 
 export function Header() {
@@ -26,9 +25,9 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-              C
+              10
             </div>
-            <span className="hidden sm:inline">ClientApp</span>
+            <span className="hidden sm:inline">First 10 Users</span>
           </Link>
 
           {/* Desktop nav */}
@@ -51,16 +50,16 @@ export function Header() {
               variant="outline"
               size="sm"
               className="hidden md:inline-flex"
-              render={<Link href="/login" />}
+              render={<Link href="/refund" />}
             >
-              Sign in
+              Refund policy
             </Button>
             <Button
               size="sm"
               className="hidden md:inline-flex"
-              render={<Link href="/signup" />}
+              render={<Link href="#pricing" />}
             >
-              Get started
+              Pick a tier
             </Button>
 
             {/* Mobile hamburger */}
