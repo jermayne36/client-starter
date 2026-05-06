@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @client/database build && cd apps/web && pnpm build && mkdir -p apps/web && cp -R .next apps/web/.next",
+  "installCommand": "if [ -f ../../pnpm-workspace.yaml ]; then cd ../..; fi && pnpm install --frozen-lockfile",
+  "buildCommand": "if [ -f ../../pnpm-workspace.yaml ]; then cd ../..; fi && pnpm --filter @client/database build && cd apps/web && pnpm build",
   "headers": [
     {
       "source": "/(.*)",
