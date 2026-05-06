@@ -19,10 +19,20 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { serverEnv } from "@/lib/env";
 import { prisma } from "@client/database/client";
-import { SubscriptionStatus } from "@prisma/client";
 
 // Required by Next.js to access raw body for Stripe signature verification
 export const runtime = "nodejs";
+
+const SubscriptionStatus = {
+  ACTIVE: "ACTIVE",
+  CANCELED: "CANCELED",
+  PAST_DUE: "PAST_DUE",
+  TRIALING: "TRIALING",
+  INCOMPLETE: "INCOMPLETE",
+} as const;
+
+type SubscriptionStatus =
+  (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus];
 
 /** Map Stripe subscription status → our SubscriptionStatus enum */
 function toSubscriptionStatus(
