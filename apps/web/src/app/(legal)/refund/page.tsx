@@ -55,10 +55,10 @@ export default function RefundPage() {
         <p className="text-muted-foreground leading-relaxed">
           To request a refund, email us at{" "}
           <a
-            href="mailto:support@yourdomain.com"
+            href="mailto:info@edukassolutions.com"
             className="text-foreground underline underline-offset-4 hover:opacity-80"
           >
-            support@yourdomain.com
+            info@edukassolutions.com
           </a>{" "}
           with your order details and the reason for your request. We will respond within{" "}
           <strong className="text-foreground">3 business days</strong>.
@@ -88,10 +88,10 @@ export default function RefundPage() {
           If you believe an unauthorized charge has occurred, please contact your card issuer
           directly. For any other billing concerns, reach us at{" "}
           <a
-            href="mailto:support@yourdomain.com"
+            href="mailto:info@edukassolutions.com"
             className="text-foreground underline underline-offset-4 hover:opacity-80"
           >
-            support@yourdomain.com
+            info@edukassolutions.com
           </a>
           .
         </p>
