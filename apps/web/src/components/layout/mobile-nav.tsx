@@ -75,15 +75,15 @@ export function MobileNav({ id, open, onClose, links }: MobileNavProps) {
           <Button
             variant="outline"
             className="w-full"
-            render={<Link href="/login" onClick={onClose} />}
+            render={<Link href="/refund" onClick={onClose} />}
           >
-            Sign in
+            Refund policy
           </Button>
           <Button
             className="w-full"
-            render={<Link href="/signup" onClick={onClose} />}
+            render={<Link href="#pricing" onClick={onClose} />}
           >
-            Get started
+            Pick a tier
           </Button>
         </div>
       </nav>

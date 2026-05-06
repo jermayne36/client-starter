@@ -2,16 +2,14 @@ import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 
 const footerLinks = {
-  Product: [
-    { href: "#features", label: "Features" },
+  Offer: [
+    { href: "#proof", label: "Proof" },
+    { href: "#deliverables", label: "Deliverables" },
     { href: "#pricing", label: "Pricing" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/automation-cleanup", label: "Automation Cleanup" },
   ],
   Company: [
+    { href: "https://www.edukassolutions.com", label: "Edukas Solutions" },
     { href: "/about", label: "About" },
-    { href: "/blog", label: "Blog" },
-    { href: "/careers", label: "Careers" },
   ],
   Legal: [
     { href: "/privacy", label: "Privacy" },
@@ -32,12 +30,12 @@ export function Footer() {
           <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-2 font-semibold mb-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-                C
+                10
               </div>
-              <span>ClientApp</span>
+              <span>First 10 Users</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A production-ready starter kit for modern web applications.
+              Evidence-backed first-user research packs for founders who need distribution signal.
             </p>
           </div>
 
@@ -65,7 +63,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            &copy; {year} ClientApp. All rights reserved.
+            &copy; {year} Edukas Solutions LLC. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
             Built with the{" "}
