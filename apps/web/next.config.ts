@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+const monorepoRoot =
+  process.env.GITHUB_WORKSPACE ?? process.cwd().replace(/\/apps\/web$/, "");
+
 const nextConfig: NextConfig = {
   // Strict React mode for development
   reactStrictMode: true,
@@ -11,6 +14,12 @@ const nextConfig: NextConfig = {
   // Prevent Next.js from bundling Prisma — it must be resolved at runtime
   // in the monorepo from packages/database/node_modules
   serverExternalPackages: ["@prisma/client", "prisma"],
+
+  // Pin Turbopack workspace root to the monorepo root so CI doesn't infer
+  // the wrong directory (apps/web/src/app) when walking up from the entrypoint.
+  turbopack: {
+    root: monorepoRoot,
+  },
 };
 
 export default withSentryConfig(nextConfig, {
