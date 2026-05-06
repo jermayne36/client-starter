@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   // Prevent Next.js from bundling Prisma — it must be resolved at runtime
   // in the monorepo from packages/database/node_modules
   serverExternalPackages: ["@prisma/client", "prisma"],
+  outputFileTracingRoot: monorepoRoot,
 
   // Pin Turbopack workspace root to the monorepo root so CI doesn't infer
   // the wrong directory (apps/web/src/app) when walking up from the entrypoint.
