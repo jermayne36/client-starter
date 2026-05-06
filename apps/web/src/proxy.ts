@@ -3,13 +3,22 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 // Routes that require authentication
 const PROTECTED_PREFIXES = ["/dashboard", "/app", "/billing"];
+const AUTH_PAGE_PATHS = new Set(["/login", "/signup"]);
 
 function isProtected(pathname: string): boolean {
   return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
+function isSessionAware(pathname: string): boolean {
+  return isProtected(pathname) || AUTH_PAGE_PATHS.has(pathname);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (!isSessionAware(pathname)) {
+    return NextResponse.next();
+  }
 
   // Refresh the Supabase session on every request (keeps auth cookie alive)
   const { supabaseResponse, user } = await updateSession(request);
@@ -22,7 +31,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirect authenticated users away from auth pages to the dashboard
-  if (user && (pathname === "/login" || pathname === "/signup")) {
+  if (user && AUTH_PAGE_PATHS.has(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

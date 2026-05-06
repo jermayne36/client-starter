@@ -50,8 +50,8 @@ jobs:
 
       - name: Post-deploy health check
         run: |
-          echo "Checking deployment health at ${{ steps.deploy.outputs.url }}/api/health"
+          echo "Checking production domain at https://first10.edukassolutions.com/"
           curl -f --retry 10 --retry-delay 5 --retry-connrefused \
-            "${{ steps.deploy.outputs.url }}/api/health" \
-            && echo "Health check passed" \
-            || { echo "Health check failed after retries"; exit 1; }
+            "https://first10.edukassolutions.com/" \
+            && echo "Production domain check passed" \
+            || { echo "Production domain check failed after retries"; exit 1; }
