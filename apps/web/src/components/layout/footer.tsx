@@ -66,9 +66,15 @@ export function Footer() {
             &copy; {year} Edukas Solutions LLC. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
-            Built with the{" "}
-            <span className="font-medium text-foreground">EdukasAI</span>{" "}
-            starter kit
+            by{" "}
+            <Link
+              href="https://www.edukassolutions.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground transition-colors hover:text-primary"
+            >
+              Edukas Solutions
+            </Link>
           </p>
         </div>
       </div>
