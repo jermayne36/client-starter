@@ -19,6 +19,7 @@
     "postinstall": "prisma generate",
     "build": "tsc",
     "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

@@ -11,18 +11,18 @@ datasource db {
 
 // Base user model — extend per client project
 model User {
-  id            String        @id @default(cuid())
-  supabaseId    String?       @unique
-  email         String        @unique
+  id            String   @id @default(cuid())
+  supabaseId    String?  @unique
+  email         String   @unique
   name          String?
   avatarUrl     String?
-  emailVerified Boolean       @default(false)
-  role          Role          @default(MEMBER)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  emailVerified Boolean  @default(false)
+  role          Role     @default(MEMBER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  subscription  Subscription?
-  auditLogs     AuditLog[]
+  subscription Subscription?
+  auditLogs    AuditLog[]
 
   @@map("users")
 }
@@ -40,7 +40,7 @@ model Subscription {
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
@@ -58,12 +58,83 @@ model AuditLog {
   userAgent String?
   createdAt DateTime @default(now())
 
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([entity, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model HoaTenant {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  cases          HoaCase[]
+  suggestions    HoaClassifierSuggestion[]
+  decisionEvents HoaDecisionEvent[]
+
+  @@map("hoa_tenants")
+}
+
+model HoaCase {
+  id              String   @id @default(cuid())
+  tenantId        String
+  sourceTicketId  String
+  channel         String
+  submittedAt     DateTime
+  redactedSubject String
+  redactedBody    String
+  redactionCount  Int
+  redactionKinds  String[]
+  createdAt       DateTime @default(now())
+
+  tenant      HoaTenant                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  suggestions HoaClassifierSuggestion[]
+
+  @@unique([tenantId, sourceTicketId])
+  @@unique([tenantId, id])
+  @@index([tenantId, submittedAt])
+  @@map("hoa_cases")
+}
+
+model HoaClassifierSuggestion {
+  id             String   @id @default(cuid())
+  tenantId       String
+  caseId         String
+  category       String
+  urgency        String
+  suggestedOwner String
+  reasonCodes    String[]
+  createdAt      DateTime @default(now())
+
+  tenant         HoaTenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  hoaCase        HoaCase            @relation(fields: [tenantId, caseId], references: [tenantId, id], onDelete: Restrict)
+  decisionEvents HoaDecisionEvent[]
+
+  @@unique([tenantId, caseId])
+  @@unique([tenantId, id])
+  @@index([tenantId, createdAt])
+  @@map("hoa_classifier_suggestions")
+}
+
+model HoaDecisionEvent {
+  id             String            @id @default(cuid())
+  tenantId       String
+  suggestionId   String
+  decision       HoaDecision
+  decisionSource HoaDecisionSource @default(HUMAN)
+  humanActorId   String
+  rationale      String?
+  createdAt      DateTime          @default(now())
+
+  tenant     HoaTenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  suggestion HoaClassifierSuggestion @relation(fields: [tenantId, suggestionId], references: [tenantId, id], onDelete: Restrict)
+
+  @@index([tenantId, suggestionId, createdAt])
+  @@map("hoa_decision_events")
 }
 
 enum Role {
@@ -78,4 +149,14 @@ enum SubscriptionStatus {
   PAST_DUE
   TRIALING
   INCOMPLETE
+}
+
+enum HoaDecision {
+  APPROVED
+  REJECTED
+  NEEDS_CHANGES
+}
+
+enum HoaDecisionSource {
+  HUMAN
 }
