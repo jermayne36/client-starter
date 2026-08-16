@@ -54,27 +54,51 @@ export interface RedactedHoaTicket {
   redactionKinds: SyntheticPiiKind[];
 }
 
-export type SuggestedCategory =
-  | "architectural_request"
-  | "billing_or_dues"
-  | "maintenance"
-  | "records_request"
-  | "rule_or_violation"
-  | "uncategorized";
+export const SUGGESTED_CATEGORIES = [
+  "architectural_request",
+  "billing_or_dues",
+  "maintenance",
+  "records_request",
+  "rule_or_violation",
+  "uncategorized",
+] as const;
 
-export type SuggestedUrgency = "emergency" | "high" | "normal";
+export type SuggestedCategory = (typeof SUGGESTED_CATEGORIES)[number];
+
+export const SUGGESTED_URGENCIES = ["emergency", "high", "normal"] as const;
+
+export type SuggestedUrgency = (typeof SUGGESTED_URGENCIES)[number];
+
+export const SUGGESTED_OWNERS = [
+  "accounting",
+  "board_or_manager_review",
+  "maintenance_coordinator",
+  "property_manager",
+] as const;
+
+export type SuggestedOwner = (typeof SUGGESTED_OWNERS)[number];
+
+export const CLASSIFIER_REASON_CODES = [
+  "architectural_keyword",
+  "billing_keyword",
+  "default_priority",
+  "emergency_keyword",
+  "high_priority_keyword",
+  "maintenance_keyword",
+  "no_category_keyword",
+  "records_keyword",
+  "rule_keyword",
+] as const;
+
+export type ClassifierReasonCode = (typeof CLASSIFIER_REASON_CODES)[number];
 
 export interface ClassifierSuggestion {
   ticketId: string;
   category: SuggestedCategory;
   urgency: SuggestedUrgency;
-  suggestedOwner:
-    | "accounting"
-    | "board_or_manager_review"
-    | "maintenance_coordinator"
-    | "property_manager";
+  suggestedOwner: SuggestedOwner;
   decisionMode: "suggestion_only";
-  reasonCodes: string[];
+  reasonCodes: ClassifierReasonCode[];
 }
 
 export interface PipelineResult {

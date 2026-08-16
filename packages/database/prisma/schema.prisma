@@ -73,10 +73,24 @@ model HoaTenant {
   createdAt DateTime @default(now())
 
   cases          HoaCase[]
+  memberships    HoaMembership[]
   suggestions    HoaClassifierSuggestion[]
   decisionEvents HoaDecisionEvent[]
 
   @@map("hoa_tenants")
+}
+
+model HoaMembership {
+  id              String   @id @default(cuid())
+  tenantId        String
+  accessTokenHash String   @unique
+  humanActorId    String
+  createdAt       DateTime @default(now())
+
+  tenant HoaTenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, humanActorId])
+  @@map("hoa_memberships")
 }
 
 model HoaCase {

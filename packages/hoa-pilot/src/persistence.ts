@@ -1,3 +1,5 @@
+import { createHash, randomUUID } from "node:crypto";
+
 import {
   HoaDecision,
   HoaDecisionSource,
@@ -5,6 +7,7 @@ import {
   type PrismaClient,
 } from "@client/database";
 
+import { assertClassifierSuggestionProvenance } from "./classifier.js";
 import {
   assertRedactedTicketProvenance,
   assertSafeForClassification,
@@ -13,30 +16,67 @@ import type { ClassifierSuggestion, RedactedHoaTicket } from "./types.js";
 
 type TenantTransaction = Prisma.TransactionClient;
 
+declare const HOA_MEMBERSHIP_CAPABILITY: unique symbol;
+declare const HOA_APPROVAL_CAPABILITY: unique symbol;
+
+export type HoaMembershipCapability = Readonly<{
+  [HOA_MEMBERSHIP_CAPABILITY]: true;
+}>;
+
+export type HumanApprovalCapability = Readonly<{
+  [HOA_APPROVAL_CAPABILITY]: true;
+}>;
+
+export const HUMAN_DECISION_RATIONALE_CODES = [
+  "insufficient_information",
+  "manager_review_complete",
+  "policy_verified",
+] as const;
+
+export type HumanDecisionRationaleCode =
+  (typeof HUMAN_DECISION_RATIONALE_CODES)[number];
+
 export interface PersistCaseSuggestionInput {
-  tenantId: string;
   redacted: RedactedHoaTicket;
   suggestion: ClassifierSuggestion;
 }
 
 export interface HumanDecisionInput {
-  tenantId: string;
   suggestionId: string;
   decision: HoaDecision;
-  humanActorId: string;
-  rationale?: string;
+  rationaleCode?: HumanDecisionRationaleCode;
 }
 
-export interface HumanApprovedSuggestion {
+interface HumanApprovalReceipt {
   tenantId: string;
   suggestionId: string;
   decisionEventId: string;
   humanActorId: string;
 }
 
+type MembershipCapabilityState = {
+  prisma: PrismaClient;
+  tokenHash: string;
+};
+
+type VerifiedMembership = {
+  tenantId: string;
+  humanActorId: string;
+};
+
+const MEMBERSHIP_CAPABILITIES = new WeakMap<
+  object,
+  MembershipCapabilityState
+>();
+const APPROVAL_CAPABILITIES = new WeakMap<object, HumanApprovalReceipt>();
+
 export class HoaPersistenceError extends Error {
   constructor(
-    readonly code: "approval_required" | "invalid_input" | "not_found",
+    readonly code:
+      | "approval_required"
+      | "authentication_required"
+      | "invalid_input"
+      | "not_found",
     message: string,
   ) {
     super(message);
@@ -57,27 +97,98 @@ function requireNonEmpty(value: string, field: string): string {
   return normalized;
 }
 
-async function withTenantTransaction<T>(
-  prisma: PrismaClient,
-  tenantIdInput: string,
-  operation: (transaction: TenantTransaction, tenantId: string) => Promise<T>,
-): Promise<T> {
-  const tenantId = requireNonEmpty(tenantIdInput, "tenantId");
+function accessTokenHash(accessToken: string): string {
+  return createHash("sha256").update(accessToken, "utf8").digest("hex");
+}
 
-  return prisma.$transaction(async (transaction) => {
+function opaqueSourceTicketId(sourceTicketId: string): string {
+  return `src_${createHash("sha256")
+    .update(sourceTicketId, "utf8")
+    .digest("base64url")}`;
+}
+
+function requireMembershipCapability(
+  capability: HoaMembershipCapability,
+): MembershipCapabilityState {
+  const state = MEMBERSHIP_CAPABILITIES.get(capability);
+
+  if (!state) {
+    // @fail-closed(hoa-membership-capability)
+    throw new HoaPersistenceError(
+      "authentication_required",
+      "A verified HOA membership capability is required",
+    );
+  }
+
+  return state;
+}
+
+async function lookupVerifiedMembership(
+  transaction: PrismaClient | TenantTransaction,
+  tokenHash: string,
+): Promise<VerifiedMembership> {
+  const memberships = await transaction.$queryRaw<VerifiedMembership[]>(
+    Prisma.sql`
+      SELECT "tenantId", "humanActorId"
+      FROM "lookup_hoa_membership"(${tokenHash})
+    `,
+  );
+  const membership = memberships[0];
+
+  if (!membership) {
+    // @fail-closed(hoa-membership-authentication)
+    throw new HoaPersistenceError(
+      "authentication_required",
+      "The HOA membership credential is invalid",
+    );
+  }
+
+  return membership;
+}
+
+export async function authenticateHoaMembership(
+  prisma: PrismaClient,
+  membershipAccessToken: string,
+): Promise<HoaMembershipCapability> {
+  const tokenHash = accessTokenHash(
+    requireNonEmpty(membershipAccessToken, "membershipAccessToken"),
+  );
+  await lookupVerifiedMembership(prisma, tokenHash);
+
+  const capability = Object.freeze({}) as HoaMembershipCapability;
+  MEMBERSHIP_CAPABILITIES.set(capability, { prisma, tokenHash });
+  return capability;
+}
+
+async function withTenantTransaction<T>(
+  capability: HoaMembershipCapability,
+  operation: (
+    transaction: TenantTransaction,
+    membership: VerifiedMembership,
+    tokenHash: string,
+  ) => Promise<T>,
+): Promise<T> {
+  const state = requireMembershipCapability(capability);
+
+  return state.prisma.$transaction(async (transaction) => {
+    const membership = await lookupVerifiedMembership(
+      transaction,
+      state.tokenHash,
+    );
     await transaction.$executeRaw(
-      Prisma.sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`,
+      Prisma.sql`SELECT set_config('app.tenant_id', ${membership.tenantId}, true)`,
     );
 
-    return operation(transaction, tenantId);
+    return operation(transaction, membership, state.tokenHash);
   });
 }
 
 export async function persistCaseSuggestion(
-  prisma: PrismaClient,
+  membership: HoaMembershipCapability,
   input: PersistCaseSuggestionInput,
 ): Promise<{ caseId: string; suggestionId: string }> {
   assertRedactedTicketProvenance(input.redacted);
+  assertClassifierSuggestionProvenance(input.suggestion);
   assertSafeForClassification(
     `${input.redacted.subject}\n${input.redacted.body}`,
   );
@@ -93,13 +204,12 @@ export async function persistCaseSuggestion(
   }
 
   return withTenantTransaction(
-    prisma,
-    input.tenantId,
-    async (transaction, tenantId) => {
+    membership,
+    async (transaction, verifiedMembership) => {
       const hoaCase = await transaction.hoaCase.create({
         data: {
-          tenantId,
-          sourceTicketId: input.redacted.id,
+          tenantId: verifiedMembership.tenantId,
+          sourceTicketId: opaqueSourceTicketId(input.redacted.id),
           channel: input.redacted.channel,
           submittedAt: new Date(input.redacted.submittedAt),
           redactedSubject: input.redacted.subject,
@@ -110,7 +220,7 @@ export async function persistCaseSuggestion(
       });
       const suggestion = await transaction.hoaClassifierSuggestion.create({
         data: {
-          tenantId,
+          tenantId: verifiedMembership.tenantId,
           caseId: hoaCase.id,
           category: input.suggestion.category,
           urgency: input.suggestion.urgency,
@@ -125,24 +235,22 @@ export async function persistCaseSuggestion(
 }
 
 export async function getCaseForTenant(
-  prisma: PrismaClient,
-  tenantId: string,
+  membership: HoaMembershipCapability,
   caseIdInput: string,
 ) {
   const caseId = requireNonEmpty(caseIdInput, "caseId");
 
   return withTenantTransaction(
-    prisma,
-    tenantId,
-    async (transaction, scopedTenantId) => {
+    membership,
+    async (transaction, verifiedMembership) => {
       const hoaCase = await transaction.hoaCase.findFirst({
-        where: { id: caseId, tenantId: scopedTenantId },
+        where: { id: caseId, tenantId: verifiedMembership.tenantId },
       });
 
       if (!hoaCase) {
         throw new HoaPersistenceError(
           "not_found",
-          "HOA case was not found in the active tenant",
+          "HOA case was not found in the verified tenant",
         );
       }
 
@@ -152,93 +260,87 @@ export async function getCaseForTenant(
 }
 
 export async function listPendingApprovals(
-  prisma: PrismaClient,
-  tenantId: string,
+  membership: HoaMembershipCapability,
 ) {
-  return withTenantTransaction(
-    prisma,
-    tenantId,
-    (transaction, scopedTenantId) =>
-      transaction.hoaClassifierSuggestion.findMany({
-        where: {
-          tenantId: scopedTenantId,
-          decisionEvents: { none: {} },
-        },
-        include: { hoaCase: true },
-        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      }),
+  return withTenantTransaction(membership, (transaction, verifiedMembership) =>
+    transaction.hoaClassifierSuggestion.findMany({
+      where: {
+        tenantId: verifiedMembership.tenantId,
+        decisionEvents: { none: {} },
+      },
+      include: { hoaCase: true },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }),
   );
 }
 
 export async function recordHumanDecision(
-  prisma: PrismaClient,
+  membership: HoaMembershipCapability,
   input: HumanDecisionInput,
 ) {
   const suggestionId = requireNonEmpty(input.suggestionId, "suggestionId");
-  const humanActorId = requireNonEmpty(input.humanActorId, "humanActorId");
-  const rationale = input.rationale?.trim() || undefined;
+  const rationaleCode = input.rationaleCode ?? null;
+
+  if (
+    rationaleCode !== null &&
+    !HUMAN_DECISION_RATIONALE_CODES.includes(rationaleCode)
+  ) {
+    // @fail-closed(hoa-decision-rationale-code)
+    throw new HoaPersistenceError(
+      "invalid_input",
+      "Decision rationale must use a bounded rationale code",
+    );
+  }
 
   return withTenantTransaction(
-    prisma,
-    input.tenantId,
-    async (transaction, tenantId) => {
-      const suggestion = await transaction.hoaClassifierSuggestion.findFirst({
-        where: { id: suggestionId, tenantId },
-        select: { id: true },
-      });
+    membership,
+    async (transaction, _verifiedMembership, tokenHash) => {
+      const eventId = randomUUID();
+      await transaction.$queryRaw(
+        Prisma.sql`
+          SELECT "tenantId", "humanActorId"
+          FROM "record_hoa_human_decision"(
+            ${eventId},
+            ${tokenHash},
+            ${suggestionId},
+            ${input.decision}::"HoaDecision",
+            ${rationaleCode}
+          )
+        `,
+      );
 
-      if (!suggestion) {
-        throw new HoaPersistenceError(
-          "not_found",
-          "HOA classifier suggestion was not found in the active tenant",
-        );
-      }
-
-      return transaction.hoaDecisionEvent.create({
-        data: {
-          tenantId,
-          suggestionId,
-          decision: input.decision,
-          decisionSource: HoaDecisionSource.HUMAN,
-          humanActorId,
-          rationale,
-        },
+      return transaction.hoaDecisionEvent.findUniqueOrThrow({
+        where: { id: eventId },
       });
     },
   );
 }
 
 export async function listDecisionHistory(
-  prisma: PrismaClient,
-  tenantId: string,
+  membership: HoaMembershipCapability,
   suggestionIdInput: string,
 ) {
   const suggestionId = requireNonEmpty(suggestionIdInput, "suggestionId");
 
-  return withTenantTransaction(
-    prisma,
-    tenantId,
-    (transaction, scopedTenantId) =>
-      transaction.hoaDecisionEvent.findMany({
-        where: { suggestionId, tenantId: scopedTenantId },
-        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      }),
+  return withTenantTransaction(membership, (transaction, verifiedMembership) =>
+    transaction.hoaDecisionEvent.findMany({
+      where: { suggestionId, tenantId: verifiedMembership.tenantId },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }),
   );
 }
 
 export async function requireHumanApprovedSuggestion(
-  prisma: PrismaClient,
-  tenantId: string,
+  membership: HoaMembershipCapability,
   suggestionIdInput: string,
-): Promise<HumanApprovedSuggestion> {
+): Promise<HumanApprovalCapability> {
   const suggestionId = requireNonEmpty(suggestionIdInput, "suggestionId");
 
   return withTenantTransaction(
-    prisma,
-    tenantId,
-    async (transaction, scopedTenantId) => {
+    membership,
+    async (transaction, verifiedMembership) => {
       const suggestion = await transaction.hoaClassifierSuggestion.findFirst({
-        where: { id: suggestionId, tenantId: scopedTenantId },
+        where: { id: suggestionId, tenantId: verifiedMembership.tenantId },
         include: {
           decisionEvents: {
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
@@ -256,18 +358,41 @@ export async function requireHumanApprovedSuggestion(
         // @fail-closed(hoa-human-approval-required)
         throw new HoaPersistenceError(
           "approval_required",
-          "A current human approval decision is required",
+          "A current verified human approval decision is required",
         );
       }
 
-      return Object.freeze({
-        tenantId: scopedTenantId,
-        suggestionId,
-        decisionEventId: decision.id,
-        humanActorId: decision.humanActorId,
-      });
+      const capability = Object.freeze({}) as HumanApprovalCapability;
+      APPROVAL_CAPABILITIES.set(
+        capability,
+        Object.freeze({
+          tenantId: verifiedMembership.tenantId,
+          suggestionId,
+          decisionEventId: decision.id,
+          humanActorId: decision.humanActorId,
+        }),
+      );
+      return capability;
     },
   );
+}
+
+export function resolveHumanApprovalCapability(
+  capability: unknown,
+): HumanApprovalReceipt {
+  if (
+    typeof capability !== "object" ||
+    capability === null ||
+    !APPROVAL_CAPABILITIES.has(capability)
+  ) {
+    // @fail-closed(hoa-approval-capability)
+    throw new HoaPersistenceError(
+      "approval_required",
+      "A non-forgeable human approval capability is required",
+    );
+  }
+
+  return APPROVAL_CAPABILITIES.get(capability)!;
 }
 
 export { HoaDecision };

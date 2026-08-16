@@ -113,7 +113,9 @@ try {
       "GRANT SELECT ON hoa_tenants TO hoa_test_app",
       "GRANT SELECT, INSERT ON hoa_cases TO hoa_test_app",
       "GRANT SELECT, INSERT ON hoa_classifier_suggestions TO hoa_test_app",
-      "GRANT SELECT, INSERT, UPDATE, DELETE ON hoa_decision_events TO hoa_test_app",
+      "GRANT SELECT, UPDATE, DELETE, TRUNCATE ON hoa_decision_events TO hoa_test_app",
+      'GRANT EXECUTE ON FUNCTION "lookup_hoa_membership"(TEXT) TO hoa_test_app',
+      'GRANT EXECUTE ON FUNCTION "record_hoa_human_decision"(TEXT, TEXT, TEXT, "HoaDecision", TEXT) TO hoa_test_app',
     ].join("; "),
   ]);
 

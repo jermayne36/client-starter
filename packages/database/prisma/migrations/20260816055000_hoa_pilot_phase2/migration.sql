@@ -27,6 +27,15 @@ CREATE TABLE "hoa_cases" (
     CONSTRAINT "hoa_cases_pkey" PRIMARY KEY ("id")
 );
 
+CREATE TABLE "hoa_memberships" (
+    "id" TEXT NOT NULL,
+    "tenantId" TEXT NOT NULL,
+    "accessTokenHash" TEXT NOT NULL,
+    "humanActorId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "hoa_memberships_pkey" PRIMARY KEY ("id")
+);
+
 CREATE TABLE "hoa_classifier_suggestions" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -52,6 +61,8 @@ CREATE TABLE "hoa_decision_events" (
 );
 
 CREATE UNIQUE INDEX "hoa_tenants_slug_key" ON "hoa_tenants"("slug");
+CREATE UNIQUE INDEX "hoa_memberships_accessTokenHash_key" ON "hoa_memberships"("accessTokenHash");
+CREATE UNIQUE INDEX "hoa_memberships_tenantId_humanActorId_key" ON "hoa_memberships"("tenantId", "humanActorId");
 CREATE UNIQUE INDEX "hoa_cases_tenantId_sourceTicketId_key" ON "hoa_cases"("tenantId", "sourceTicketId");
 CREATE UNIQUE INDEX "hoa_cases_tenantId_id_key" ON "hoa_cases"("tenantId", "id");
 CREATE INDEX "hoa_cases_tenantId_submittedAt_idx" ON "hoa_cases"("tenantId", "submittedAt");
@@ -62,6 +73,11 @@ CREATE INDEX "hoa_decision_events_tenantId_suggestionId_createdAt_idx" ON "hoa_d
 
 ALTER TABLE "hoa_cases"
     ADD CONSTRAINT "hoa_cases_tenantId_fkey"
+    FOREIGN KEY ("tenantId") REFERENCES "hoa_tenants"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "hoa_memberships"
+    ADD CONSTRAINT "hoa_memberships_tenantId_fkey"
     FOREIGN KEY ("tenantId") REFERENCES "hoa_tenants"("id")
     ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -107,6 +123,86 @@ ALTER TABLE "hoa_decision_events" FORCE ROW LEVEL SECURITY;
 CREATE POLICY "hoa_decision_events_tenant_isolation" ON "hoa_decision_events"
     USING ("tenantId" = NULLIF(current_setting('app.tenant_id', true), ''))
     WITH CHECK ("tenantId" = NULLIF(current_setting('app.tenant_id', true), ''));
+
+CREATE FUNCTION "lookup_hoa_membership"("tokenHash" TEXT)
+RETURNS TABLE ("tenantId" TEXT, "humanActorId" TEXT)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+    SELECT membership."tenantId", membership."humanActorId"
+    FROM public."hoa_memberships" AS membership
+    WHERE membership."accessTokenHash" = "tokenHash"
+    LIMIT 1
+$$;
+
+REVOKE ALL ON FUNCTION "lookup_hoa_membership"(TEXT) FROM PUBLIC;
+
+-- @fail-closed(hoa-decision-direct-insert-denied)
+REVOKE INSERT ON "hoa_decision_events" FROM PUBLIC;
+
+CREATE FUNCTION "record_hoa_human_decision"(
+    "eventId" TEXT,
+    "tokenHash" TEXT,
+    "targetSuggestionId" TEXT,
+    "targetDecision" "HoaDecision",
+    "targetRationale" TEXT
+)
+RETURNS TABLE ("tenantId" TEXT, "humanActorId" TEXT)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+    membership_tenant_id TEXT;
+    membership_human_actor_id TEXT;
+BEGIN
+    SELECT membership."tenantId", membership."humanActorId"
+    INTO membership_tenant_id, membership_human_actor_id
+    FROM public."hoa_memberships" AS membership
+    WHERE membership."accessTokenHash" = "tokenHash"
+    LIMIT 1;
+
+    IF membership_tenant_id IS NULL OR membership_human_actor_id IS NULL THEN
+        RAISE EXCEPTION 'verified human membership is required'
+            USING ERRCODE = '42501';
+    END IF;
+
+    PERFORM set_config('app.tenant_id', membership_tenant_id, true);
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public."hoa_classifier_suggestions" AS suggestion
+        WHERE suggestion."id" = "targetSuggestionId"
+          AND suggestion."tenantId" = membership_tenant_id
+    ) THEN
+        RAISE EXCEPTION 'suggestion was not found in verified tenant'
+            USING ERRCODE = 'P0002';
+    END IF;
+
+    INSERT INTO public."hoa_decision_events" (
+        "id",
+        "tenantId",
+        "suggestionId",
+        "decision",
+        "decisionSource",
+        "humanActorId",
+        "rationale"
+    ) VALUES (
+        "eventId",
+        membership_tenant_id,
+        "targetSuggestionId",
+        "targetDecision",
+        'HUMAN',
+        membership_human_actor_id,
+        "targetRationale"
+    );
+
+    RETURN QUERY SELECT membership_tenant_id, membership_human_actor_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION "record_hoa_human_decision"(TEXT, TEXT, TEXT, "HoaDecision", TEXT) FROM PUBLIC;
 
 -- @fail-closed(hoa-decision-events-append-only)
 CREATE FUNCTION "reject_hoa_decision_event_mutation"()
