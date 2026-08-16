@@ -8,6 +8,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "hoa:phase1": "pnpm --filter @client/hoa-pilot pipeline",
+    "hoa:phase2:test": "pnpm --filter @client/hoa-pilot test",
     "lint": "turbo lint",
     "test": "turbo test",
     "type-check": "turbo type-check",

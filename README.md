@@ -51,6 +51,7 @@ client-starter/
         lib/                # Utilities, env validation
   packages/
     database/               # Prisma schema + client
+    hoa-pilot/              # Redacted intake, suggestions, approval persistence
     shared/                 # Shared types, constants
   .github/workflows/        # CI pipeline
   docs/handoff/             # Client handoff documentation
@@ -67,6 +68,7 @@ client-starter/
 | `pnpm type-check`                           | TypeScript type checking                                            |
 | `pnpm format`                               | Format code with Prettier                                           |
 | `pnpm hoa:phase1`                           | Run the synthetic HOA intake → redaction → classifier-stub pipeline |
+| `pnpm hoa:phase2:test`                      | Verify tenant RLS and the always-human approval queue in PostgreSQL |
 | `pnpm --filter @client/database db:studio`  | Open Prisma Studio                                                  |
 | `pnpm --filter @client/database db:migrate` | Run Prisma migrations                                               |
 | `pnpm --filter @client/database db:push`    | Push schema to database                                             |
@@ -87,8 +89,26 @@ the redaction stage, so a freely constructed redacted-shaped object is rejected.
 pnpm hoa:phase1
 ```
 
-The corpus lives at `packages/hoa-pilot/data/synthetic-hoa-tickets.json`. Phase 2
-will add the human approval queue and dashboard; neither is part of this package yet.
+The corpus lives at `packages/hoa-pilot/data/synthetic-hoa-tickets.json`.
+
+## HOA Pilot Skeleton — Phase 2
+
+Phase 2 persists only the normalized/redacted case fields and classifier suggestions.
+PostgreSQL row-level security scopes cases, suggestions, and decision events to the
+active tenant. Suggestions enter a pending queue until a human decision is appended;
+decision events cannot be updated, deleted, or truncated. There is no send, apply,
+fine, denial, vendor-dispatch, or other external action path.
+
+The integration test uses a disposable PostgreSQL 16 Docker container and proves
+cross-tenant reads fail, approval is required, non-human decision sources fail, and
+decision-event mutation fails:
+
+```bash
+pnpm hoa:phase2:test
+```
+
+The dashboard, redaction-review surface, and expanded evaluation harness remain
+Phase 3 scope.
 
 ## Adding shadcn/ui Components
 

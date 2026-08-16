@@ -4,6 +4,7 @@ import {
 } from "./redaction.js";
 import type {
   ClassifierSuggestion,
+  ClassifierReasonCode,
   RedactedHoaTicket,
   SuggestedCategory,
   SuggestedUrgency,
@@ -12,7 +13,7 @@ import type {
 const CATEGORY_RULES: Array<{
   category: SuggestedCategory;
   pattern: RegExp;
-  reasonCode: string;
+  reasonCode: ClassifierReasonCode;
 }> = [
   {
     category: "records_request",
@@ -44,7 +45,7 @@ const CATEGORY_RULES: Array<{
 
 function suggestUrgency(text: string): {
   urgency: SuggestedUrgency;
-  reasonCode: string;
+  reasonCode: ClassifierReasonCode;
 } {
   if (
     /\b(?:active fire|gas smell|medical emergency|sparking|uncontrolled flooding)\b/iu.test(
@@ -59,6 +60,19 @@ function suggestUrgency(text: string): {
   }
 
   return { urgency: "normal", reasonCode: "default_priority" };
+}
+
+const CLASSIFIER_SUGGESTION_PROVENANCE = new WeakSet<ClassifierSuggestion>();
+
+export function assertClassifierSuggestionProvenance(
+  suggestion: ClassifierSuggestion,
+): void {
+  if (!CLASSIFIER_SUGGESTION_PROVENANCE.has(suggestion)) {
+    // @fail-closed(hoa-persistence-suggestion-provenance)
+    throw new Error(
+      "Persistence boundary rejected a suggestion that did not come from classifyTicket",
+    );
+  }
 }
 
 export function classifyTicket(
@@ -82,7 +96,7 @@ export function classifyTicket(
           ? "board_or_manager_review"
           : "property_manager";
 
-  return {
+  const suggestion: ClassifierSuggestion = {
     ticketId: ticket.id,
     category,
     urgency: urgency.urgency,
@@ -93,4 +107,10 @@ export function classifyTicket(
       urgency.reasonCode,
     ],
   };
+
+  Object.freeze(suggestion.reasonCodes);
+  Object.freeze(suggestion);
+  CLASSIFIER_SUGGESTION_PROVENANCE.add(suggestion);
+
+  return suggestion;
 }
