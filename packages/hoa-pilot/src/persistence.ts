@@ -59,6 +59,11 @@ type MembershipCapabilityState = {
   tokenHash: string;
 };
 
+type ApprovalCapabilityState = {
+  membership: HoaMembershipCapability;
+  receipt: HumanApprovalReceipt;
+};
+
 type VerifiedMembership = {
   tenantId: string;
   humanActorId: string;
@@ -68,7 +73,7 @@ const MEMBERSHIP_CAPABILITIES = new WeakMap<
   object,
   MembershipCapabilityState
 >();
-const APPROVAL_CAPABILITIES = new WeakMap<object, HumanApprovalReceipt>();
+const APPROVAL_CAPABILITIES = new WeakMap<object, ApprovalCapabilityState>();
 
 export class HoaPersistenceError extends Error {
   constructor(
@@ -366,10 +371,13 @@ export async function requireHumanApprovedSuggestion(
       APPROVAL_CAPABILITIES.set(
         capability,
         Object.freeze({
-          tenantId: verifiedMembership.tenantId,
-          suggestionId,
-          decisionEventId: decision.id,
-          humanActorId: decision.humanActorId,
+          membership,
+          receipt: Object.freeze({
+            tenantId: verifiedMembership.tenantId,
+            suggestionId,
+            decisionEventId: decision.id,
+            humanActorId: decision.humanActorId,
+          }),
         }),
       );
       return capability;
@@ -377,13 +385,18 @@ export async function requireHumanApprovedSuggestion(
   );
 }
 
-export function resolveHumanApprovalCapability(
+export async function resolveHumanApprovalCapability<T>(
   capability: unknown,
-): HumanApprovalReceipt {
+  action: (
+    transaction: TenantTransaction,
+    receipt: HumanApprovalReceipt,
+  ) => Promise<T>,
+): Promise<T> {
   if (
     typeof capability !== "object" ||
     capability === null ||
-    !APPROVAL_CAPABILITIES.has(capability)
+    !APPROVAL_CAPABILITIES.has(capability) ||
+    typeof action !== "function"
   ) {
     // @fail-closed(hoa-approval-capability)
     throw new HoaPersistenceError(
@@ -392,7 +405,47 @@ export function resolveHumanApprovalCapability(
     );
   }
 
-  return APPROVAL_CAPABILITIES.get(capability)!;
+  const state = APPROVAL_CAPABILITIES.get(capability)!;
+
+  return withTenantTransaction(
+    state.membership,
+    async (transaction, verifiedMembership) => {
+      await transaction.$executeRaw(
+        Prisma.sql`
+          SELECT pg_advisory_xact_lock(
+            hashtextextended(
+              ${`${verifiedMembership.tenantId}:${state.receipt.suggestionId}`},
+              0
+            )
+          )
+        `,
+      );
+      const latestDecision = await transaction.hoaDecisionEvent.findFirst({
+        where: {
+          suggestionId: state.receipt.suggestionId,
+          tenantId: verifiedMembership.tenantId,
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      });
+
+      if (
+        verifiedMembership.tenantId !== state.receipt.tenantId ||
+        !latestDecision ||
+        latestDecision.id !== state.receipt.decisionEventId ||
+        latestDecision.decision !== HoaDecision.APPROVED ||
+        latestDecision.decisionSource !== HoaDecisionSource.HUMAN ||
+        latestDecision.humanActorId !== state.receipt.humanActorId
+      ) {
+        // @fail-closed(hoa-stale-approval-capability)
+        throw new HoaPersistenceError(
+          "approval_required",
+          "The human approval capability is no longer current",
+        );
+      }
+
+      return action(transaction, state.receipt);
+    },
+  );
 }
 
 export { HoaDecision };

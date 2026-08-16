@@ -300,20 +300,25 @@ test("verified memberships persist tenant-isolated cases through a human-only ap
       memberA,
       persisted[0].suggestionId,
     );
-    const approvalReceipt =
-      persistence.resolveHumanApprovalCapability(approval);
+    const approvalReceipt = await persistence.resolveHumanApprovalCapability(
+      approval,
+      async (_transaction, receipt) => receipt,
+    );
     assert.equal(approvalReceipt.decisionEventId, approvedEvent.id);
     assert.equal(approvalReceipt.humanActorId, TENANT_A_ACTOR);
 
     // @positive-control(hoa-approval-capability)
-    assert.throws(
+    await assert.rejects(
       () =>
-        persistence.resolveHumanApprovalCapability({
-          tenantId: TENANT_A,
-          suggestionId: persisted[0]!.suggestionId,
-          decisionEventId: approvedEvent.id,
-          humanActorId: "automation-bot",
-        }),
+        persistence.resolveHumanApprovalCapability(
+          {
+            tenantId: TENANT_A,
+            suggestionId: persisted[0]!.suggestionId,
+            decisionEventId: approvedEvent.id,
+            humanActorId: "automation-bot",
+          },
+          async (_transaction, receipt) => receipt,
+        ),
       (error: unknown) =>
         error instanceof persistence.HoaPersistenceError &&
         error.code === "approval_required",
@@ -410,6 +415,43 @@ test("verified memberships persist tenant-isolated cases through a human-only ap
     );
     assert.deepEqual(unchangedHistory, history);
 
+    await persistence.recordHumanDecision(memberA, {
+      suggestionId: persisted[0].suggestionId,
+      decision: persistence.HoaDecision.REJECTED,
+      rationaleCode: "manager_review_complete",
+    });
+    await assert.rejects(
+      () =>
+        persistence.requireHumanApprovedSuggestion(
+          memberA,
+          persisted[0]!.suggestionId,
+        ),
+      (error: unknown) =>
+        error instanceof persistence.HoaPersistenceError &&
+        error.code === "approval_required",
+    );
+
+    // @positive-control(hoa-stale-approval-capability)
+    let staleCapabilityRejected = false;
+    let staleCapabilityActionRan = false;
+    try {
+      await persistence.resolveHumanApprovalCapability(
+        approval,
+        async () => {
+          staleCapabilityActionRan = true;
+        },
+      );
+    } catch (error) {
+      staleCapabilityRejected =
+        error instanceof persistence.HoaPersistenceError &&
+        error.code === "approval_required";
+    }
+    console.log(
+      `JERRY_DISCONFIRMATION fresh_lookup=REJECTED stale_capability=${staleCapabilityRejected ? "REJECTED" : "AUTHORIZED"}`,
+    );
+    assert.equal(staleCapabilityRejected, true);
+    assert.equal(staleCapabilityActionRan, false);
+
     const rawIdPipeline = runPipeline([
       {
         id: RAW_PROBE,
@@ -478,7 +520,7 @@ test("verified memberships persist tenant-isolated cases through a human-only ap
       `EVIDENCE verified_tenant_isolation tenant_a_case=${persisted[0].caseId} tenant_b_authenticated_literal_case_id=BLOCKED tenant_b_direct_rows=0`,
     );
     console.log(
-      `EVIDENCE approval_flow synthetic=${corpus.length} pending_before=${pendingBefore.length} decisions=2 pending_after=${pendingAfter.length} authenticated_human_actor=${TENANT_A_ACTOR} forged_approval=REJECTED direct_insert=REJECTED`,
+      `EVIDENCE approval_flow synthetic=${corpus.length} pending_before=${pendingBefore.length} decisions=3 pending_after=${pendingAfter.length} authenticated_human_actor=${TENANT_A_ACTOR} forged_approval=REJECTED direct_insert=REJECTED stale_capability=REJECTED`,
     );
     console.log(
       "EVIDENCE append_only_after_regrant update=REJECTED delete=REJECTED truncate=REJECTED history_unchanged=true",

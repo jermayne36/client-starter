@@ -180,6 +180,14 @@ BEGIN
             USING ERRCODE = 'P0002';
     END IF;
 
+    -- Serialize decision appends with any action consuming current approval.
+    PERFORM pg_advisory_xact_lock(
+        hashtextextended(
+            membership_tenant_id || ':' || "targetSuggestionId",
+            0
+        )
+    );
+
     INSERT INTO public."hoa_decision_events" (
         "id",
         "tenantId",
