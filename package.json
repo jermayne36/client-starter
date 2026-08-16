@@ -7,7 +7,9 @@
     "preinstall": "npx only-allow pnpm",
     "build": "turbo build",
     "dev": "turbo dev",
+    "hoa:phase1": "pnpm --filter @client/hoa-pilot pipeline",
     "lint": "turbo lint",
+    "test": "turbo test",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\""
