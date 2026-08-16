@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint-build:
-    name: Lint & Build
+    name: Lint, Build & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,3 +40,6 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: pnpm build
+
+      - name: Test
+        run: pnpm test

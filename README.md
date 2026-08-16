@@ -63,6 +63,7 @@ client-starter/
 | `pnpm dev`                                  | Start all apps in development mode                                  |
 | `pnpm build`                                | Production build all packages                                       |
 | `pnpm lint`                                 | Run ESLint across all packages                                      |
+| `pnpm test`                                 | Run package tests through Turborepo                                 |
 | `pnpm type-check`                           | TypeScript type checking                                            |
 | `pnpm format`                               | Format code with Prettier                                           |
 | `pnpm hoa:phase1`                           | Run the synthetic HOA intake → redaction → classifier-stub pipeline |
@@ -76,6 +77,11 @@ The client-independent HOA pilot pipeline runs locally against checked-in synthe
 tickets. It normalizes intake, redacts HOA identifiers with a fail-closed residual
 scan, and produces deterministic classifier suggestions. It does not call an LLM,
 send email, use client-platform APIs, or apply a suggested decision.
+
+The phase-1 regex rules cover only the checked-in synthetic formats. The residual
+scan reuses that bounded vocabulary as a consistency check; it is not independent
+DLP or named-entity detection. Classifier input must carry runtime provenance from
+the redaction stage, so a freely constructed redacted-shaped object is rejected.
 
 ```bash
 pnpm hoa:phase1

@@ -1,3 +1,4 @@
+import { positiveControlExitCode } from "./cli-control.js";
 import { loadSyntheticCorpus } from "./corpus.js";
 import { normalizeTicket } from "./intake.js";
 import { assertSafeForClassification } from "./redaction.js";
@@ -18,12 +19,14 @@ if (!piiFixture || !cleanFixture) {
 
 const rawPositiveControl = normalizeTicket(piiFixture);
 let rawRejection = "ERROR: raw PII unexpectedly passed";
+let rawControlBlocked = false;
 
 try {
   assertSafeForClassification(
     `${rawPositiveControl.subject}\n${rawPositiveControl.body}`,
   );
 } catch (error) {
+  rawControlBlocked = true;
   rawRejection =
     error instanceof Error ? error.message : "Unknown redaction error";
 }
@@ -47,7 +50,9 @@ console.log(
   `classifier_stub: in=${result.classification.input} classified=${result.classification.classified} suggestion_only=${result.classification.suggestionOnly}`,
 );
 console.log("positive_control_raw_classifier_boundary:");
-console.log(`  ticket=${piiFixture.id} result=BLOCKED reason=${rawRejection}`);
+console.log(
+  `  ticket=${piiFixture.id} result=${rawControlBlocked ? "BLOCKED" : "FAILED_OPEN"} reason=${rawRejection}`,
+);
 console.log("positive_control_redacted:");
 console.log(
   `  ticket=${piiFixture.id} kinds=${redactedExample?.redacted.redactionKinds.join(",")}`,
@@ -59,3 +64,8 @@ console.log(
   `  ticket=${cleanFixture.id} replacements=${cleanExample?.redacted.redactionCount}`,
 );
 console.log(`  body=${cleanExample?.redacted.body}`);
+
+const cliExitCode = positiveControlExitCode(rawControlBlocked);
+if (cliExitCode !== 0) {
+  process.exitCode = cliExitCode;
+}

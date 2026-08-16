@@ -10,6 +10,10 @@ type PiiRule = {
   replacement: string;
 };
 
+/**
+ * Bounded regex coverage for the synthetic phase-1 corpus. These patterns are a
+ * masking/residual consistency layer, not an independent DLP or NER oracle.
+ */
 const PII_RULES: PiiRule[] = [
   {
     kind: "email",
@@ -19,12 +23,12 @@ const PII_RULES: PiiRule[] = [
   {
     kind: "phone",
     pattern:
-      /(?<!\d)(?:\+?1[ .-]?)?(?:\(\d{3}\)|\d{3})[ .-]\d{3}[ .-]\d{4}(?!\d)/gu,
+      /(?<!\d)(?:\+?1[ .-]?)?(?:\(\d{3}\)[ .-]?|\d{3}[ .-]?)\d{3}[ .-]?\d{4}(?!\d)/gu,
     replacement: "[PHONE]",
   },
   {
     kind: "ssn",
-    pattern: /(?<!\d)\d{3}-\d{2}-\d{4}(?!\d)/gu,
+    pattern: /(?<!\d)\d{3}[ -]\d{2}[ -]\d{4}(?!\d)/gu,
     replacement: "[SSN]",
   },
   {
@@ -36,19 +40,19 @@ const PII_RULES: PiiRule[] = [
   {
     kind: "unit",
     pattern:
-      /\b(?:APT|APARTMENT|UNIT|SUITE)[ \t]+(?:#\s*[A-Z0-9-]{1,10}|[A-Z0-9-]{0,9}\d[A-Z0-9-]{0,9})\b/giu,
+      /\b(?:APT|APARTMENT|UNIT|SUITE)[ \t]+(?:#[ \t]*[A-Z0-9-]{1,10}|[A-Z0-9-]{0,9}\d[A-Z0-9-]{0,9})\b/giu,
     replacement: "[UNIT]",
   },
   {
     kind: "license_plate",
     pattern:
-      /\b(?:LICENSE\s+)?PLATE(?:\s+(?:NUMBER|NO\.?))?\s*[:#-]?\s*[A-Z0-9-]{3,10}\b/giu,
+      /\b(?:LICENSE(?:[ \t]+PLATE)?|PLATE(?:[ \t]+(?:NUMBER|NO\.?))?)[ \t]*[:#-]?[ \t]*(?=[A-Z0-9-]{3,10}\b)(?=[A-Z0-9-]*\d)[A-Z0-9-]{3,10}\b/giu,
     replacement: "[LICENSE_PLATE]",
   },
   {
     kind: "gate_code",
     pattern:
-      /\b(?:GATE|DOOR|ENTRY|ACCESS)\s+CODE\s*(?:IS|:|#)?\s*[A-Z0-9*-]{3,12}\b/giu,
+      /\b(?:GATE|DOOR|ENTRY|ACCESS)[ \t]+(?:CODE|PIN)[ \t]*(?:IS|:|#)?[ \t]*[A-Z0-9*-]{3,12}\b/giu,
     replacement: "[GATE_CODE]",
   },
   {
@@ -58,6 +62,9 @@ const PII_RULES: PiiRule[] = [
     replacement: "[ACCOUNT_REFERENCE]",
   },
 ];
+
+const REDACTED_TICKET_PROVENANCE = new WeakSet<RedactedHoaTicket>();
+const MIN_BOUNDED_IDENTIFIER_LENGTH = 2;
 
 const TOKEN_BY_KIND: Record<SyntheticPiiKind, string> = {
   account_reference: "[ACCOUNT_REFERENCE]",
@@ -73,6 +80,44 @@ const TOKEN_BY_KIND: Record<SyntheticPiiKind, string> = {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function boundedValuePattern(value: string): RegExp {
+  return new RegExp(
+    `(?<![\\p{L}\\p{N}])${escapeRegExp(value)}(?![\\p{L}\\p{N}])`,
+    "giu",
+  );
+}
+
+function knownIdentifierPattern(
+  kind: SyntheticPiiKind,
+  rawValue: string,
+): RegExp {
+  const value = rawValue.trim();
+
+  if (kind === "unit") {
+    const unitValue = value
+      .replace(/^(?:APT|APARTMENT|UNIT|SUITE)(?:[ \t]+#?[ \t]*|$)/iu, "")
+      .trim();
+
+    if (unitValue.length === 0) {
+      // @fail-closed(hoa-empty-known-unit)
+      throw new Error("Known identifier unit has no unit value");
+    }
+
+    return new RegExp(
+      `\\b(?:APT|APARTMENT|UNIT|SUITE)[ \\t]+#?[ \\t]*${escapeRegExp(unitValue)}(?![\\p{L}\\p{N}])`,
+      "giu",
+    );
+  }
+
+  const compactLength = [...value.replace(/[ \t-]/gu, "")].length;
+  if (compactLength < MIN_BOUNDED_IDENTIFIER_LENGTH) {
+    // @fail-closed(hoa-short-known-identifier)
+    throw new Error(`Known identifier ${kind} is too short to redact safely`);
+  }
+
+  return boundedValuePattern(value);
 }
 
 function applyPattern(
@@ -100,8 +145,20 @@ export function assertSafeForClassification(text: string): void {
   const residualKinds = findResidualPii(text);
 
   if (residualKinds.length > 0) {
+    // @fail-closed(hoa-residual-pii)
     throw new Error(
       `Redaction gate blocked classifier boundary: ${residualKinds.join(", ")}`,
+    );
+  }
+}
+
+export function assertRedactedTicketProvenance(
+  ticket: RedactedHoaTicket,
+): void {
+  if (!REDACTED_TICKET_PROVENANCE.has(ticket)) {
+    // @fail-closed(hoa-classifier-redaction-provenance)
+    throw new Error(
+      "Classifier boundary rejected a ticket that did not come from redactTicket",
     );
   }
 }
@@ -117,7 +174,7 @@ export function redactTicket(ticket: NormalizedHoaTicket): RedactedHoaTicket {
   );
 
   for (const identifier of knownIdentifiers) {
-    const pattern = new RegExp(escapeRegExp(identifier.value), "giu");
+    const pattern = knownIdentifierPattern(identifier.kind, identifier.value);
     const subjectResult = applyPattern(
       subject,
       pattern,
@@ -151,7 +208,7 @@ export function redactTicket(ticket: NormalizedHoaTicket): RedactedHoaTicket {
 
   assertSafeForClassification(`${subject}\n${body}`);
 
-  return {
+  const redactedTicket: RedactedHoaTicket = {
     id: ticket.id,
     channel: ticket.channel,
     submittedAt: ticket.submittedAt,
@@ -160,4 +217,10 @@ export function redactTicket(ticket: NormalizedHoaTicket): RedactedHoaTicket {
     redactionCount,
     redactionKinds: [...redactionKinds].sort(),
   };
+
+  Object.freeze(redactedTicket.redactionKinds);
+  Object.freeze(redactedTicket);
+  REDACTED_TICKET_PROVENANCE.add(redactedTicket);
+
+  return redactedTicket;
 }

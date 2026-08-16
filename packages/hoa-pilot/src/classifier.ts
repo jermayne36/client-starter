@@ -1,4 +1,7 @@
-import { assertSafeForClassification } from "./redaction.js";
+import {
+  assertRedactedTicketProvenance,
+  assertSafeForClassification,
+} from "./redaction.js";
 import type {
   ClassifierSuggestion,
   RedactedHoaTicket,
@@ -61,6 +64,7 @@ function suggestUrgency(text: string): {
 export function classifyTicket(
   ticket: RedactedHoaTicket,
 ): ClassifierSuggestion {
+  assertRedactedTicketProvenance(ticket);
   const text = `${ticket.subject}\n${ticket.body}`;
   assertSafeForClassification(text);
 
