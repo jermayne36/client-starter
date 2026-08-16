@@ -58,16 +58,31 @@ client-starter/
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start all apps in development mode |
-| `pnpm build` | Production build all packages |
-| `pnpm lint` | Run ESLint across all packages |
-| `pnpm type-check` | TypeScript type checking |
-| `pnpm format` | Format code with Prettier |
-| `pnpm --filter @client/database db:studio` | Open Prisma Studio |
-| `pnpm --filter @client/database db:migrate` | Run Prisma migrations |
-| `pnpm --filter @client/database db:push` | Push schema to database |
+| Command                                     | Description                                                         |
+| ------------------------------------------- | ------------------------------------------------------------------- |
+| `pnpm dev`                                  | Start all apps in development mode                                  |
+| `pnpm build`                                | Production build all packages                                       |
+| `pnpm lint`                                 | Run ESLint across all packages                                      |
+| `pnpm type-check`                           | TypeScript type checking                                            |
+| `pnpm format`                               | Format code with Prettier                                           |
+| `pnpm hoa:phase1`                           | Run the synthetic HOA intake → redaction → classifier-stub pipeline |
+| `pnpm --filter @client/database db:studio`  | Open Prisma Studio                                                  |
+| `pnpm --filter @client/database db:migrate` | Run Prisma migrations                                               |
+| `pnpm --filter @client/database db:push`    | Push schema to database                                             |
+
+## HOA Pilot Skeleton — Phase 1
+
+The client-independent HOA pilot pipeline runs locally against checked-in synthetic
+tickets. It normalizes intake, redacts HOA identifiers with a fail-closed residual
+scan, and produces deterministic classifier suggestions. It does not call an LLM,
+send email, use client-platform APIs, or apply a suggested decision.
+
+```bash
+pnpm hoa:phase1
+```
+
+The corpus lives at `packages/hoa-pilot/data/synthetic-hoa-tickets.json`. Phase 2
+will add the human approval queue and dashboard; neither is part of this package yet.
 
 ## Adding shadcn/ui Components
 
@@ -79,11 +94,11 @@ npx shadcn@latest add button card dialog  # Add components
 
 ## Deployment
 
-| Service | Target |
-|---------|--------|
-| **Frontend** | Vercel (connect GitHub repo, set root to `apps/web`) |
-| **Database** | Supabase PostgreSQL |
-| **API** (if added) | Railway or Vercel Functions |
+| Service            | Target                                               |
+| ------------------ | ---------------------------------------------------- |
+| **Frontend**       | Vercel (connect GitHub repo, set root to `apps/web`) |
+| **Database**       | Supabase PostgreSQL                                  |
+| **API** (if added) | Railway or Vercel Functions                          |
 
 Set environment variables in your deployment platform matching `.env.example`.
 

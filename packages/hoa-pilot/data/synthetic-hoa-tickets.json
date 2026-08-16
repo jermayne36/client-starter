@@ -1,0 +1,522 @@
+[
+  {
+    "id": "HOA-SYN-001",
+    "channel": "email",
+    "submittedAt": "2026-08-01T15:04:00Z",
+    "subject": "Water leak near my unit",
+    "body": "I am Elena Marquez at 1842 Juniper Ridge Drive, Unit 204. Water is leaking through the ceiling. Reply to elena.marquez@example.test or 702-555-0101. HOA account LL-48291.",
+    "resident": {
+      "name": "Elena Marquez",
+      "email": "elena.marquez@example.test",
+      "phone": "702-555-0101"
+    },
+    "property": {
+      "streetAddress": "1842 Juniper Ridge Drive",
+      "unit": "Unit 204"
+    },
+    "accountReference": "LL-48291",
+    "expectedPiiKinds": [
+      "person_name",
+      "email",
+      "phone",
+      "street_address",
+      "unit",
+      "account_reference"
+    ]
+  },
+  {
+    "id": "HOA-SYN-002",
+    "channel": "web_form",
+    "submittedAt": "2026-08-01T16:20:00Z",
+    "subject": "Broken irrigation line",
+    "body": "The irrigation line is spraying water by the east walkway. Please call (702) 555-0102 before the vendor arrives.",
+    "resident": { "phone": "(702) 555-0102" },
+    "expectedPiiKinds": ["phone"]
+  },
+  {
+    "id": "HOA-SYN-003",
+    "channel": "email",
+    "submittedAt": "2026-08-01T17:42:00Z",
+    "subject": "Vehicle blocking fire lane",
+    "body": "A vehicle with license plate NV-7XK921 has been parked in the marked fire lane since this morning.",
+    "expectedPiiKinds": ["license_plate"]
+  },
+  {
+    "id": "HOA-SYN-004",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-01T18:13:00Z",
+    "subject": "Vendor cannot enter",
+    "body": "The plumbing vendor needs the gate code 4821 before the afternoon repair window.",
+    "expectedPiiKinds": ["gate_code"]
+  },
+  {
+    "id": "HOA-SYN-005",
+    "channel": "web_form",
+    "submittedAt": "2026-08-01T19:05:00Z",
+    "subject": "Request for meeting minutes",
+    "body": "Please send the most recent board meeting minutes to jordan.lee@example.test.",
+    "resident": { "email": "jordan.lee@example.test" },
+    "expectedPiiKinds": ["email"]
+  },
+  {
+    "id": "HOA-SYN-006",
+    "channel": "email",
+    "submittedAt": "2026-08-02T14:15:00Z",
+    "subject": "Roof debris on patio",
+    "body": "Roofing debris fell onto the patio at 77 Desert Bloom Lane, Apt 3B during the wind last night.",
+    "property": { "streetAddress": "77 Desert Bloom Lane", "unit": "Apt 3B" },
+    "expectedPiiKinds": ["street_address", "unit"]
+  },
+  {
+    "id": "HOA-SYN-007",
+    "channel": "web_form",
+    "submittedAt": "2026-08-02T15:22:00Z",
+    "subject": "Incorrect identity document attached",
+    "body": "I accidentally included SSN 123-45-6789 in the records upload. Please remove it from the work item.",
+    "expectedPiiKinds": ["ssn"]
+  },
+  {
+    "id": "HOA-SYN-008",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-02T16:40:00Z",
+    "subject": "Dues balance question",
+    "body": "Please review HOA account number NVHOA-884201 because the latest payment is not reflected.",
+    "accountReference": "NVHOA-884201",
+    "expectedPiiKinds": ["account_reference"]
+  },
+  {
+    "id": "HOA-SYN-009",
+    "channel": "email",
+    "submittedAt": "2026-08-02T17:31:00Z",
+    "subject": "Architectural paint request",
+    "body": "Priya Shah requests approval to repaint the front door. Contact Priya Shah at priya.shah@example.test.",
+    "resident": { "name": "Priya Shah", "email": "priya.shah@example.test" },
+    "expectedPiiKinds": ["person_name", "email"]
+  },
+  {
+    "id": "HOA-SYN-010",
+    "channel": "web_form",
+    "submittedAt": "2026-08-02T18:10:00Z",
+    "subject": "Pool key replacement",
+    "body": "My pool key stopped working. Text 702.555.0110 when a replacement is ready.",
+    "resident": { "phone": "702.555.0110" },
+    "expectedPiiKinds": ["phone"]
+  },
+  {
+    "id": "HOA-SYN-011",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-03T14:00:00Z",
+    "subject": "Lobby light flickering",
+    "body": "The north lobby ceiling light flickers after sunset and needs inspection.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-012",
+    "channel": "email",
+    "submittedAt": "2026-08-03T14:14:00Z",
+    "subject": "Pool temperature concern",
+    "body": "The community pool water has felt unusually cold for three days.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-013",
+    "channel": "web_form",
+    "submittedAt": "2026-08-03T14:28:00Z",
+    "subject": "Trash enclosure door",
+    "body": "The west trash enclosure door no longer latches and opens in the wind.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-014",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-03T14:42:00Z",
+    "subject": "Landscape irrigation schedule",
+    "body": "Sprinklers are running during the afternoon instead of the posted morning schedule.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-015",
+    "channel": "email",
+    "submittedAt": "2026-08-03T14:56:00Z",
+    "subject": "Request reserve study copy",
+    "body": "Please provide the current reserve study and the latest approved update.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-016",
+    "channel": "web_form",
+    "submittedAt": "2026-08-03T15:10:00Z",
+    "subject": "Elevator noise",
+    "body": "The east elevator makes a grinding sound between the second and third floors.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-017",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-03T15:24:00Z",
+    "subject": "Pet waste station empty",
+    "body": "The pet waste bag dispenser beside the dog run has been empty since the weekend.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-018",
+    "channel": "email",
+    "submittedAt": "2026-08-03T15:38:00Z",
+    "subject": "Patio shade request",
+    "body": "What documents are needed to request approval for a retractable patio shade?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-019",
+    "channel": "web_form",
+    "submittedAt": "2026-08-03T15:52:00Z",
+    "subject": "Uncollected recycling",
+    "body": "Recycling was not collected from the south enclosure on the scheduled day.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-020",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-03T16:06:00Z",
+    "subject": "Clubhouse thermostat",
+    "body": "The clubhouse air conditioning remains on overnight after events end.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-021",
+    "channel": "email",
+    "submittedAt": "2026-08-04T14:00:00Z",
+    "subject": "Roof inspection timing",
+    "body": "When is the annual roof inspection scheduled for this season?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-022",
+    "channel": "web_form",
+    "submittedAt": "2026-08-04T14:18:00Z",
+    "subject": "Parking rule clarification",
+    "body": "Does the overnight guest parking rule apply on holiday weekends?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-023",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-04T14:36:00Z",
+    "subject": "Playground gate hinge",
+    "body": "The playground gate hinge is loose and the gate drags on the pavement.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-024",
+    "channel": "email",
+    "submittedAt": "2026-08-04T14:54:00Z",
+    "subject": "Assessment payment methods",
+    "body": "Which payment methods are available for the upcoming special assessment?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-025",
+    "channel": "web_form",
+    "submittedAt": "2026-08-04T15:12:00Z",
+    "subject": "Common-area noise",
+    "body": "Loud equipment has been running near the central courtyard before quiet hours end.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-026",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-04T15:30:00Z",
+    "subject": "Mailbox kiosk light",
+    "body": "The light above the shared mailbox kiosk is out.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-027",
+    "channel": "email",
+    "submittedAt": "2026-08-04T15:48:00Z",
+    "subject": "Tree branch over walkway",
+    "body": "A low tree branch is obstructing the north pedestrian walkway.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-028",
+    "channel": "web_form",
+    "submittedAt": "2026-08-04T16:06:00Z",
+    "subject": "Fence material question",
+    "body": "Are composite fence panels allowed under the current architectural guidelines?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-029",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-04T16:24:00Z",
+    "subject": "Water pressure low",
+    "body": "Water pressure in the clubhouse kitchen has been low all week.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-030",
+    "channel": "email",
+    "submittedAt": "2026-08-04T16:42:00Z",
+    "subject": "Board packet request",
+    "body": "Please provide the public portion of the next board meeting packet.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-031",
+    "channel": "web_form",
+    "submittedAt": "2026-08-05T14:00:00Z",
+    "subject": "Dog run drainage",
+    "body": "Standing water remains in the dog run after irrigation cycles.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-032",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-05T14:20:00Z",
+    "subject": "Exterior paint palette",
+    "body": "Where can residents find the current approved exterior paint palette?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-033",
+    "channel": "email",
+    "submittedAt": "2026-08-05T14:40:00Z",
+    "subject": "Gym equipment repair",
+    "body": "The treadmill nearest the windows stops unexpectedly during use.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-034",
+    "channel": "web_form",
+    "submittedAt": "2026-08-05T15:00:00Z",
+    "subject": "Street sweeping notice",
+    "body": "Can management post the next private-road sweeping date?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-035",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-05T15:20:00Z",
+    "subject": "Pool furniture damage",
+    "body": "Two lounge chairs at the community pool have cracked frames.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-036",
+    "channel": "email",
+    "submittedAt": "2026-08-05T15:40:00Z",
+    "subject": "Solar request checklist",
+    "body": "Please send the checklist for submitting a rooftop solar request.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-037",
+    "channel": "web_form",
+    "submittedAt": "2026-08-05T16:00:00Z",
+    "subject": "Pest activity by dumpster",
+    "body": "There is increased pest activity around the east dumpster enclosure.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-038",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-05T16:20:00Z",
+    "subject": "Late fee policy copy",
+    "body": "Please provide the current written late fee policy.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-039",
+    "channel": "email",
+    "submittedAt": "2026-08-05T16:40:00Z",
+    "subject": "Community room reservation",
+    "body": "Is the community room available for a weekday evening meeting?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-040",
+    "channel": "web_form",
+    "submittedAt": "2026-08-05T17:00:00Z",
+    "subject": "Sidewalk trip hazard",
+    "body": "A raised section of common-area sidewalk creates a trip hazard near the garden.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-041",
+    "channel": "email",
+    "submittedAt": "2026-08-06T14:00:00Z",
+    "subject": "Emergency water shutoff",
+    "body": "Uncontrolled flooding is entering the hallway outside 920 Canyon View Road, Suite 12. Call +1 702-555-0141.",
+    "resident": { "phone": "+1 702-555-0141" },
+    "property": { "streetAddress": "920 Canyon View Road", "unit": "Suite 12" },
+    "expectedPiiKinds": ["phone", "street_address", "unit"]
+  },
+  {
+    "id": "HOA-SYN-042",
+    "channel": "web_form",
+    "submittedAt": "2026-08-06T14:24:00Z",
+    "subject": "Repeated noise report",
+    "body": "Morgan Reyes reports repeated overnight noise. Follow up at morgan.reyes@example.test.",
+    "resident": {
+      "name": "Morgan Reyes",
+      "email": "morgan.reyes@example.test"
+    },
+    "expectedPiiKinds": ["person_name", "email"]
+  },
+  {
+    "id": "HOA-SYN-043",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-06T14:48:00Z",
+    "subject": "Garage remote pickup",
+    "body": "Garage remote is ready for Unit 8C. Resident phone is 702-555-0143.",
+    "resident": { "phone": "702-555-0143" },
+    "property": { "unit": "Unit 8C" },
+    "expectedPiiKinds": ["phone", "unit"]
+  },
+  {
+    "id": "HOA-SYN-044",
+    "channel": "email",
+    "submittedAt": "2026-08-06T15:12:00Z",
+    "subject": "Visitor access issue",
+    "body": "The visitor entry code is B7*940 and the intercom is not connecting.",
+    "expectedPiiKinds": ["gate_code"]
+  },
+  {
+    "id": "HOA-SYN-045",
+    "channel": "web_form",
+    "submittedAt": "2026-08-06T15:36:00Z",
+    "subject": "Parking warning dispute",
+    "body": "The warning identifies plate number 6ABC921, but the vehicle was not onsite that day.",
+    "expectedPiiKinds": ["license_plate"]
+  },
+  {
+    "id": "HOA-SYN-046",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-06T16:00:00Z",
+    "subject": "Payment allocation",
+    "body": "Owner account ID CA-772901 should show two payments instead of one.",
+    "accountReference": "CA-772901",
+    "expectedPiiKinds": ["account_reference"]
+  },
+  {
+    "id": "HOA-SYN-047",
+    "channel": "email",
+    "submittedAt": "2026-08-06T16:24:00Z",
+    "subject": "Window replacement request",
+    "body": "Luis Ortega at 441 Harbor Mesa Avenue, Apartment 16 requests window replacement approval.",
+    "resident": { "name": "Luis Ortega" },
+    "property": {
+      "streetAddress": "441 Harbor Mesa Avenue",
+      "unit": "Apartment 16"
+    },
+    "expectedPiiKinds": ["person_name", "street_address", "unit"]
+  },
+  {
+    "id": "HOA-SYN-048",
+    "channel": "web_form",
+    "submittedAt": "2026-08-06T16:48:00Z",
+    "subject": "Resident ledger request",
+    "body": "Send the ledger to nora.kim@example.test and reference resident account RV-99021.",
+    "resident": { "email": "nora.kim@example.test" },
+    "accountReference": "RV-99021",
+    "expectedPiiKinds": ["email", "account_reference"]
+  },
+  {
+    "id": "HOA-SYN-049",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-06T17:12:00Z",
+    "subject": "Intercom directory correction",
+    "body": "Change the directory entry for Amina Diallo and call 702 555 0149 after the update.",
+    "resident": { "name": "Amina Diallo", "phone": "702 555 0149" },
+    "expectedPiiKinds": ["person_name", "phone"]
+  },
+  {
+    "id": "HOA-SYN-050",
+    "channel": "email",
+    "submittedAt": "2026-08-06T17:36:00Z",
+    "subject": "Document upload included SSN",
+    "body": "The uploaded architectural form accidentally contains 987-65-4321 and should be redacted before review.",
+    "expectedPiiKinds": ["ssn"]
+  },
+  {
+    "id": "HOA-SYN-051",
+    "channel": "web_form",
+    "submittedAt": "2026-08-07T14:00:00Z",
+    "subject": "Fire extinguisher inspection",
+    "body": "The clubhouse extinguisher inspection tag appears past due.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-052",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-07T14:22:00Z",
+    "subject": "Common gate closes slowly",
+    "body": "The vehicle gate takes nearly a minute to close after each car.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-053",
+    "channel": "email",
+    "submittedAt": "2026-08-07T14:44:00Z",
+    "subject": "Budget report request",
+    "body": "Please provide the latest approved annual budget report.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-054",
+    "channel": "web_form",
+    "submittedAt": "2026-08-07T15:06:00Z",
+    "subject": "Bench needs repair",
+    "body": "A bench beside the west garden has a loose seat board.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-055",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-07T15:28:00Z",
+    "subject": "Holiday decoration rules",
+    "body": "When must exterior holiday decorations be removed?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-056",
+    "channel": "email",
+    "submittedAt": "2026-08-07T15:50:00Z",
+    "subject": "Spa timer not working",
+    "body": "The community spa timer does not start the jets.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-057",
+    "channel": "web_form",
+    "submittedAt": "2026-08-07T16:12:00Z",
+    "subject": "Package room ventilation",
+    "body": "The package room feels unusually warm and the vent is silent.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-058",
+    "channel": "csv_export",
+    "submittedAt": "2026-08-07T16:34:00Z",
+    "subject": "Violation hearing schedule",
+    "body": "Where is the next violation hearing schedule posted?",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-059",
+    "channel": "email",
+    "submittedAt": "2026-08-07T16:56:00Z",
+    "subject": "Storm drain blocked",
+    "body": "Leaves are blocking the common-area storm drain after yesterday's wind.",
+    "expectedPiiKinds": []
+  },
+  {
+    "id": "HOA-SYN-060",
+    "channel": "web_form",
+    "submittedAt": "2026-08-07T17:18:00Z",
+    "subject": "New resident orientation",
+    "body": "When is the next general community orientation session?",
+    "expectedPiiKinds": []
+  }
+]

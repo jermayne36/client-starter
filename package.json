@@ -7,6 +7,7 @@
     "preinstall": "npx only-allow pnpm",
     "build": "turbo build",
     "dev": "turbo dev",
+    "hoa:phase1": "pnpm --filter @client/hoa-pilot pipeline",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
